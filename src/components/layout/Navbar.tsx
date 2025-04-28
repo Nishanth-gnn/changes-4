@@ -1,17 +1,23 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
   Menu, 
   X,
   Calendar, 
   User, 
-  BarChart3
+  LogOut
 } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  
+  // Check if user is on a dashboard page (authenticated)
+  const isAuthenticated = location.pathname.includes('/patient') || 
+                         location.pathname.includes('/staff') || 
+                         location.pathname.includes('/admin');
 
   return (
     <nav className="bg-white shadow-sm">
@@ -37,12 +43,23 @@ const Navbar = () => {
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-            <Button asChild variant="outline">
-              <Link to="/login">Login</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/register">Register</Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button asChild variant="outline">
+                <Link to="/login">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="outline">
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/register">Register</Link>
+                </Button>
+              </>
+            )}
           </div>
           <div className="flex items-center sm:hidden">
             <button
@@ -72,12 +89,23 @@ const Navbar = () => {
             </Link>
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="flex items-center px-4 gap-2">
-                <Button asChild variant="outline" className="w-full">
-                  <Link to="/login">Login</Link>
-                </Button>
-                <Button asChild className="w-full">
-                  <Link to="/register">Register</Link>
-                </Button>
+                {isAuthenticated ? (
+                  <Button asChild variant="outline" className="w-full">
+                    <Link to="/login">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link to="/login">Login</Link>
+                    </Button>
+                    <Button asChild className="w-full">
+                      <Link to="/register">Register</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
