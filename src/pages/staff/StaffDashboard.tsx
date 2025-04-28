@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -148,16 +147,6 @@ const StaffDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold mb-2">Staff Dashboard</h1>
             <p className="text-gray-600">{staffData.name} • {staffData.department} • {staffData.role}</p>
-          </div>
-          <div className="mt-4 md:mt-0 flex gap-2">
-            <Button variant="outline">
-              <Calendar className="mr-2 h-4 w-4" />
-              My Schedule
-            </Button>
-            <Button>
-              <Users className="mr-2 h-4 w-4" />
-              View All Patients
-            </Button>
           </div>
         </div>
 
