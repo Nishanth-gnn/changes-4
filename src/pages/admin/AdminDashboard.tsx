@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,7 +20,8 @@ import {
   CheckCircle,
   AlertCircle,
   View,
-  Edit
+  Edit,
+  Save
 } from "lucide-react";
 import {
   Select,
@@ -38,6 +40,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 const adminData = {
@@ -152,6 +162,22 @@ const AdminDashboard = () => {
   const [searchDepartment, setSearchDepartment] = useState("");
   const [searchStaff, setSearchStaff] = useState("");
   
+  // State for view dialogs
+  const [viewDepartmentDialog, setViewDepartmentDialog] = useState(false);
+  const [viewStaffDialog, setViewStaffDialog] = useState(false);
+  
+  // State for edit dialogs
+  const [editDepartmentDialog, setEditDepartmentDialog] = useState(false);
+  const [editStaffDialog, setEditStaffDialog] = useState(false);
+  
+  // State for selected items
+  const [selectedDepartment, setSelectedDepartment] = useState<any>(null);
+  const [selectedStaff, setSelectedStaff] = useState<any>(null);
+  
+  // Editable form states
+  const [editableDepartment, setEditableDepartment] = useState<any>(null);
+  const [editableStaff, setEditableStaff] = useState<any>(null);
+  
   const filteredDepartments = departmentStats.filter(dep =>
     dep.name.toLowerCase().includes(searchDepartment.toLowerCase())
   );
@@ -187,23 +213,65 @@ const AdminDashboard = () => {
     );
   };
 
-  const handleViewDetails = (type: 'department' | 'staff', name: string) => {
-    toast.success(`Viewing details for ${name}`, {
-      description: `Opening ${type} details view`,
-      action: {
-        label: "Close",
-        onClick: () => console.log("Closed toast")
-      }
+  const handleViewDetails = (type: 'department' | 'staff', item: any) => {
+    if (type === 'department') {
+      setSelectedDepartment(item);
+      setViewDepartmentDialog(true);
+    } else {
+      setSelectedStaff(item);
+      setViewStaffDialog(true);
+    }
+    
+    toast.success(`Viewing ${type} details`, {
+      description: `Displaying details for ${item.name}`
     });
   };
 
-  const handleEdit = (type: 'department' | 'staff', name: string) => {
-    toast.success(`Editing ${name}`, {
-      description: `Opening ${type} edit form`,
-      action: {
-        label: "Close",
-        onClick: () => console.log("Closed toast")
-      }
+  const handleEdit = (type: 'department' | 'staff', item: any) => {
+    if (type === 'department') {
+      setSelectedDepartment(item);
+      setEditableDepartment({...item});
+      setEditDepartmentDialog(true);
+    } else {
+      setSelectedStaff(item);
+      setEditableStaff({...item});
+      setEditStaffDialog(true);
+    }
+    
+    toast.success(`Editing ${type}`, {
+      description: `Opening edit form for ${item.name}`
+    });
+  };
+  
+  const handleSaveDepartment = () => {
+    // In a real app, you would update the backend here
+    // For now, we'll just update the local state
+    const updatedDepartments = departmentStats.map(dept => 
+      dept.id === editableDepartment.id ? editableDepartment : dept
+    );
+    
+    // Normally we would update a state variable here, but for demo purposes
+    // we'll just show a toast notification
+    setEditDepartmentDialog(false);
+    
+    toast.success(`Department updated`, {
+      description: `${editableDepartment.name} has been updated successfully.`
+    });
+  };
+  
+  const handleSaveStaff = () => {
+    // In a real app, you would update the backend here
+    // For now, we'll just update the local state
+    const updatedStaff = staffList.map(staff => 
+      staff.id === editableStaff.id ? editableStaff : staff
+    );
+    
+    // Normally we would update a state variable here, but for demo purposes
+    // we'll just show a toast notification
+    setEditStaffDialog(false);
+    
+    toast.success(`Staff member updated`, {
+      description: `${editableStaff.name}'s information has been updated successfully.`
     });
   };
 
@@ -327,7 +395,7 @@ const AdminDashboard = () => {
                               <Button 
                                 size="sm" 
                                 variant="ghost"
-                                onClick={() => handleViewDetails('department', department.name)}
+                                onClick={() => handleViewDetails('department', department)}
                               >
                                 <View className="h-4 w-4 mr-1" />
                                 View
@@ -335,7 +403,7 @@ const AdminDashboard = () => {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => handleEdit('department', department.name)}
+                                onClick={() => handleEdit('department', department)}
                               >
                                 <Edit className="h-4 w-4 mr-1" />
                                 Edit
@@ -460,7 +528,7 @@ const AdminDashboard = () => {
                               <Button 
                                 size="sm" 
                                 variant="ghost"
-                                onClick={() => handleViewDetails('staff', staff.name)}
+                                onClick={() => handleViewDetails('staff', staff)}
                               >
                                 <View className="h-4 w-4 mr-1" />
                                 View
@@ -468,7 +536,7 @@ const AdminDashboard = () => {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => handleEdit('staff', staff.name)}
+                                onClick={() => handleEdit('staff', staff)}
                               >
                                 <Edit className="h-4 w-4 mr-1" />
                                 Edit
@@ -655,6 +723,308 @@ const AdminDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* View Department Dialog */}
+      <Dialog open={viewDepartmentDialog} onOpenChange={setViewDepartmentDialog}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Department Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about the department.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedDepartment && (
+            <div className="py-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-gray-500">Department Name</Label>
+                  <p className="font-medium">{selectedDepartment.name}</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-500">Status</Label>
+                  <div>{getDepartmentStatusBadge(selectedDepartment.status)}</div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-sm text-gray-500">Patients Today</Label>
+                  <p className="font-medium">{selectedDepartment.patientsToday}</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-500">Avg. Wait Time</Label>
+                  <p className="font-medium">{selectedDepartment.avgWaitTime} min</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-500">Staff Available</Label>
+                  <p className="font-medium">{selectedDepartment.staffAvailable}</p>
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-sm text-gray-500">Department Analytics</Label>
+                <div className="h-[200px] bg-gray-100 rounded-md mt-2 flex items-center justify-center">
+                  <p className="text-gray-500">Department analytics chart would display here</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewDepartmentDialog(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              setViewDepartmentDialog(false);
+              handleEdit('department', selectedDepartment);
+            }}>
+              <Edit className="h-4 w-4 mr-1" /> Edit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Department Dialog */}
+      <Dialog open={editDepartmentDialog} onOpenChange={setEditDepartmentDialog}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Edit Department</DialogTitle>
+            <DialogDescription>
+              Make changes to the department information.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editableDepartment && (
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="dept-name">Department Name</Label>
+                <Input 
+                  id="dept-name" 
+                  value={editableDepartment.name} 
+                  onChange={(e) => setEditableDepartment({
+                    ...editableDepartment,
+                    name: e.target.value
+                  })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="dept-status">Status</Label>
+                <Select 
+                  value={editableDepartment.status}
+                  onValueChange={(value) => setEditableDepartment({
+                    ...editableDepartment,
+                    status: value
+                  })}
+                >
+                  <SelectTrigger id="dept-status">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="busy">Busy</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="low">Low Traffic</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="patients-today">Patients Today</Label>
+                  <Input 
+                    id="patients-today" 
+                    type="number" 
+                    value={editableDepartment.patientsToday} 
+                    onChange={(e) => setEditableDepartment({
+                      ...editableDepartment,
+                      patientsToday: parseInt(e.target.value) || 0
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="avg-wait">Avg. Wait Time (min)</Label>
+                  <Input 
+                    id="avg-wait" 
+                    type="number" 
+                    value={editableDepartment.avgWaitTime} 
+                    onChange={(e) => setEditableDepartment({
+                      ...editableDepartment,
+                      avgWaitTime: parseInt(e.target.value) || 0
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="staff-available">Staff Available</Label>
+                  <Input 
+                    id="staff-available" 
+                    type="number" 
+                    value={editableDepartment.staffAvailable} 
+                    onChange={(e) => setEditableDepartment({
+                      ...editableDepartment,
+                      staffAvailable: parseInt(e.target.value) || 0
+                    })}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDepartmentDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveDepartment}>
+              <Save className="h-4 w-4 mr-1" /> Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* View Staff Dialog */}
+      <Dialog open={viewStaffDialog} onOpenChange={setViewStaffDialog}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Staff Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about staff member.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedStaff && (
+            <div className="py-4 space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xl font-bold">
+                  {selectedStaff.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">{selectedStaff.name}</h3>
+                  <p className="text-gray-500">{selectedStaff.role}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-gray-500">Department</Label>
+                  <p className="font-medium">{selectedStaff.department}</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-500">Status</Label>
+                  <div>{getStaffStatusIndicator(selectedStaff.status)}</div>
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-sm text-gray-500">Activity Summary</Label>
+                <div className="h-[150px] bg-gray-100 rounded-md mt-2 flex items-center justify-center">
+                  <p className="text-gray-500">Staff activity chart would display here</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewStaffDialog(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              setViewStaffDialog(false);
+              handleEdit('staff', selectedStaff);
+            }}>
+              <Edit className="h-4 w-4 mr-1" /> Edit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Staff Dialog */}
+      <Dialog open={editStaffDialog} onOpenChange={setEditStaffDialog}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Edit Staff Member</DialogTitle>
+            <DialogDescription>
+              Make changes to staff member information.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editableStaff && (
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="staff-name">Full Name</Label>
+                <Input 
+                  id="staff-name" 
+                  value={editableStaff.name} 
+                  onChange={(e) => setEditableStaff({
+                    ...editableStaff,
+                    name: e.target.value
+                  })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="staff-role">Role</Label>
+                <Input 
+                  id="staff-role" 
+                  value={editableStaff.role} 
+                  onChange={(e) => setEditableStaff({
+                    ...editableStaff,
+                    role: e.target.value
+                  })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="staff-department">Department</Label>
+                <Select 
+                  value={editableStaff.department}
+                  onValueChange={(value) => setEditableStaff({
+                    ...editableStaff,
+                    department: value
+                  })}
+                >
+                  <SelectTrigger id="staff-department">
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departmentStats.map(dept => (
+                      <SelectItem key={dept.id} value={dept.name}>{dept.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="staff-status">Status</Label>
+                <Select 
+                  value={editableStaff.status}
+                  onValueChange={(value) => setEditableStaff({
+                    ...editableStaff,
+                    status: value
+                  })}
+                >
+                  <SelectTrigger id="staff-status">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Online</SelectItem>
+                    <SelectItem value="offline">Offline</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditStaffDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveStaff}>
+              <Save className="h-4 w-4 mr-1" /> Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
