@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,7 @@ const initialUserData = {
   ]
 };
 
-const queueStatus = {
+const queueStatusData = {
   position: 3,
   estimatedWaitTime: 25,
   totalInQueue: 8,
@@ -56,6 +55,8 @@ const PatientDashboard = () => {
   const [userData, setUserData] = useState(initialUserData);
   const [activeTab, setActiveTab] = useState("upcoming");
   const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [queueStatus, setQueueStatus] = useState(queueStatusData);
+  const [showQueueStatus, setShowQueueStatus] = useState(true);
 
   const cancelAppointment = (appointmentId: string) => {
     setUserData(prev => ({
@@ -124,7 +125,7 @@ const PatientDashboard = () => {
           </div>
         </div>
 
-        {queueStatus.position > 0 && (
+        {showQueueStatus && queueStatus.position > 0 && (
           <QueueStatusCard queueStatus={queueStatus} />
         )}
 
