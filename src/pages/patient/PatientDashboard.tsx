@@ -1,188 +1,168 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import QueueStatusCard from "@/components/patient/QueueStatusCard";
+import QueueStatusIndicator from "@/components/patient/QueueStatusIndicator";
 import AppointmentCard from "@/components/patient/AppointmentCard";
 import AppointmentForm from "@/components/patient/AppointmentForm";
 
-// Mock data
-const initialUserData = {
-  name: "John Doe",
-  patientId: "P12345",
-  upcomingAppointments: [
+const PatientDashboard = () => {
+  const [activeAppointment, setActiveAppointment] = useState<any>(null);
+  const [currentStatus, setCurrentStatus] = useState<'waiting' | 'called' | 'completed'>('waiting');
+  const [queuePosition, setQueuePosition] = useState(3);
+
+  // Mock patient data
+  const patientData = {
+    name: "Alex Johnson",
+    patientId: "P10045872"
+  };
+
+  // Mock queue status
+  const queueStatus = {
+    position: queuePosition,
+    estimatedWaitTime: 15,
+    totalInQueue: 8,
+    department: "Cardiology",
+    averageProcessingTime: 12
+  };
+
+  // Demo function to simulate status changes
+  const simulateStatusChange = () => {
+    if (currentStatus === 'waiting') {
+      setCurrentStatus('called');
+      toast.success("You've been called! Please proceed to your designated room.");
+    } else if (currentStatus === 'called') {
+      setCurrentStatus('completed');
+      toast.success("Your appointment has been completed!");
+    } else {
+      setCurrentStatus('waiting');
+      setQueuePosition(Math.floor(Math.random() * 5) + 1);
+      toast.info("You've been added to the waiting queue.");
+    }
+  };
+
+  // Mock upcoming appointments
+  const upcomingAppointments = [
     {
-      id: "a1",
+      id: "apt1",
       department: "Cardiology",
       doctor: "Dr. Sarah Smith",
-      date: "2025-05-05",
-      time: "09:30 AM",
-      status: "scheduled"
+      date: "2023-06-15",
+      time: "10:00 AM",
+      status: "scheduled",
+      notes: "Annual heart checkup"
     },
     {
-      id: "a2",
-      department: "Neurology",
-      doctor: "Dr. Michael Johnson",
-      date: "2025-05-15",
-      time: "02:00 PM",
-      status: "scheduled"
-    }
-  ],
-  pastAppointments: [
-    {
-      id: "a0",
+      id: "apt2",
       department: "General Medicine",
-      doctor: "Dr. Emily Chen",
-      date: "2025-04-20",
-      time: "10:00 AM",
-      status: "completed",
-      notes: "Annual checkup completed. Blood work ordered."
-    }
-  ]
-};
-
-const queueStatusData = {
-  position: 3,
-  estimatedWaitTime: 25,
-  totalInQueue: 8,
-  department: "Cardiology",
-  averageProcessingTime: 8
-};
-
-const PatientDashboard = () => {
-  const [userData, setUserData] = useState(initialUserData);
-  const [activeTab, setActiveTab] = useState("upcoming");
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [queueStatus, setQueueStatus] = useState(queueStatusData);
-  const [showQueueStatus, setShowQueueStatus] = useState(true);
-
-  const cancelAppointment = (appointmentId: string) => {
-    setUserData(prev => ({
-      ...prev,
-      upcomingAppointments: prev.upcomingAppointments.filter(apt => apt.id !== appointmentId)
-    }));
-    toast.success("Appointment cancelled successfully!");
-  };
-
-  const rescheduleAppointment = (appointmentId: string) => {
-    setActiveTab("book");
-    toast.info("Fill in the form to reschedule your appointment");
-  };
-
-  const handleAppointmentSubmit = (data: any) => {
-    const newAppointment = {
-      id: `a${Date.now()}`,
-      department: data.department,
-      doctor: getDoctorName(data.doctor),
-      date: data.date.toISOString().split('T')[0],
-      time: data.time,
+      doctor: "Dr. Michael Johnson",
+      date: "2023-06-28",
+      time: "2:30 PM",
       status: "scheduled"
-    };
+    }
+  ];
+  
+  // Mock past appointments
+  const pastAppointments = [
+    {
+      id: "apt3",
+      department: "Dermatology",
+      doctor: "Dr. Emily Chen",
+      date: "2023-05-20",
+      time: "11:15 AM",
+      status: "completed",
+      notes: "Skin condition follow-up"
+    },
+    {
+      id: "apt4",
+      department: "Orthopedics",
+      doctor: "Dr. Robert Williams",
+      date: "2023-04-10",
+      time: "9:00 AM",
+      status: "completed"
+    }
+  ];
 
-    setUserData(prev => ({
-      ...prev,
-      upcomingAppointments: [...prev.upcomingAppointments, newAppointment]
-    }));
-
-    toast.success("Appointment booked successfully!");
-    setActiveTab("upcoming");
+  const handleSubmitAppointment = (data: any) => {
+    console.log("New appointment request:", data);
+    toast.success("Appointment request submitted successfully!");
   };
 
-  const getDoctorName = (doctorId: string): string => {
-    const doctors: Record<string, string> = {
-      "dr-smith": "Dr. Sarah Smith",
-      "dr-johnson": "Dr. Michael Johnson",
-      "dr-chen": "Dr. Emily Chen",
-      "dr-patel": "Dr. Raj Patel"
-    };
-    return doctors[doctorId] || doctorId;
+  const handleReschedule = (id: string) => {
+    console.log("Reschedule appointment:", id);
+    toast.info("Reschedule request submitted.");
   };
 
-  const signOut = () => {
-    setIsAuthenticated(false);
-    toast.success("Signed out successfully!");
+  const handleCancel = (id: string) => {
+    console.log("Cancel appointment:", id);
+    toast.success("Appointment cancelled successfully.");
   };
 
   return (
     <Layout>
       <div className="page-container">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome, {userData.name}</h1>
-            <p className="text-gray-600">Patient ID: {userData.patientId}</p>
+            <h1 className="text-3xl font-bold mb-1">Patient Dashboard</h1>
+            <p className="text-gray-600">Welcome, {patientData.name} • ID: {patientData.patientId}</p>
           </div>
-          <div className="mt-4 md:mt-0 flex gap-2">
-            <Button className="mt-4 md:mt-0" asChild>
-              <a href="#book">Book New Appointment</a>
-            </Button>
-            {isAuthenticated && (
-              <Button variant="outline" onClick={signOut}>
-                Sign Out
-              </Button>
-            )}
-          </div>
+          <Button onClick={simulateStatusChange} variant="outline">
+            Demo: Change Status
+          </Button>
         </div>
 
-        {showQueueStatus && queueStatus.position > 0 && (
+        {/* Queue Status Section with the new indicator */}
+        <QueueStatusIndicator 
+          status={currentStatus} 
+          position={currentStatus === 'waiting' ? queuePosition : undefined} 
+        />
+        
+        {currentStatus === 'waiting' && (
           <QueueStatusCard queueStatus={queueStatus} />
         )}
 
-        <Tabs defaultValue="upcoming" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="upcoming" className="mt-6">
+          <TabsList className="mb-8">
             <TabsTrigger value="upcoming">Upcoming Appointments</TabsTrigger>
             <TabsTrigger value="past">Past Appointments</TabsTrigger>
-            <TabsTrigger value="book" id="book">Book Appointment</TabsTrigger>
+            <TabsTrigger value="book">Book Appointment</TabsTrigger>
           </TabsList>
           
           <TabsContent value="upcoming">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {userData.upcomingAppointments.map((appointment) => (
-                <AppointmentCard
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingAppointments.map((appointment) => (
+                <AppointmentCard 
                   key={appointment.id}
                   appointment={appointment}
                   type="upcoming"
-                  onReschedule={rescheduleAppointment}
-                  onCancel={cancelAppointment}
+                  onReschedule={handleReschedule}
+                  onCancel={handleCancel}
                 />
               ))}
-
-              {userData.upcomingAppointments.length === 0 && (
-                <div className="col-span-2 text-center py-12 bg-gray-50 rounded-lg">
-                  <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-medium text-gray-600">No Upcoming Appointments</h3>
-                  <p className="text-gray-500 mt-2">Schedule a new appointment to get started.</p>
-                  <Button className="mt-4" onClick={() => setActiveTab("book")}>
-                    Book Appointment
-                  </Button>
-                </div>
-              )}
             </div>
           </TabsContent>
           
           <TabsContent value="past">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {userData.pastAppointments.map((appointment) => (
-                <AppointmentCard
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pastAppointments.map((appointment) => (
+                <AppointmentCard 
                   key={appointment.id}
                   appointment={appointment}
                   type="past"
                 />
               ))}
-
-              {userData.pastAppointments.length === 0 && (
-                <div className="col-span-2 text-center py-12 bg-gray-50 rounded-lg">
-                  <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-medium text-gray-600">No Past Appointments</h3>
-                  <p className="text-gray-500 mt-2">Your appointment history will appear here.</p>
-                </div>
-              )}
             </div>
           </TabsContent>
           
           <TabsContent value="book">
-            <AppointmentForm onSubmit={handleAppointmentSubmit} />
+            <div className="max-w-2xl mx-auto">
+              <AppointmentForm onSubmit={handleSubmitAppointment} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
