@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -18,7 +17,9 @@ import {
   ArrowDown,
   Activity,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  View,
+  Edit
 } from "lucide-react";
 import {
   Select,
@@ -39,13 +40,11 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 
-// Mock data
 const adminData = {
   name: "Admin User",
   role: "System Administrator"
 };
 
-// Department stats
 const departmentStats = [
   {
     id: "d1",
@@ -97,7 +96,6 @@ const departmentStats = [
   }
 ];
 
-// Staff list
 const staffList = [
   {
     id: "s1",
@@ -143,7 +141,6 @@ const staffList = [
   }
 ];
 
-// System metrics
 const systemMetrics = {
   totalPatients: 242,
   totalAppointments: 310,
@@ -190,6 +187,26 @@ const AdminDashboard = () => {
     );
   };
 
+  const handleViewDetails = (type: 'department' | 'staff', name: string) => {
+    toast.success(`Viewing details for ${name}`, {
+      description: `Opening ${type} details view`,
+      action: {
+        label: "Close",
+        onClick: () => console.log("Closed toast")
+      }
+    });
+  };
+
+  const handleEdit = (type: 'department' | 'staff', name: string) => {
+    toast.success(`Editing ${name}`, {
+      description: `Opening ${type} edit form`,
+      action: {
+        label: "Close",
+        onClick: () => console.log("Closed toast")
+      }
+    });
+  };
+
   return (
     <Layout>
       <div className="page-container">
@@ -210,7 +227,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-6">
@@ -258,7 +274,6 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
         <Tabs defaultValue="departments">
           <TabsList className="mb-6">
             <TabsTrigger value="departments">Departments</TabsTrigger>
@@ -309,10 +324,20 @@ const AdminDashboard = () => {
                           <TableCell>{getDepartmentStatusBadge(department.status)}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="ghost" onClick={() => toast.success(`Viewing ${department.name} details`)}>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => handleViewDetails('department', department.name)}
+                              >
+                                <View className="h-4 w-4 mr-1" />
                                 View
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => toast.success(`Editing ${department.name} settings`)}>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleEdit('department', department.name)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
                                 Edit
                               </Button>
                             </div>
@@ -329,7 +354,6 @@ const AdminDashboard = () => {
                   </TableBody>
                 </Table>
                 
-                {/* Department Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                   <Card>
                     <CardHeader>
@@ -433,10 +457,20 @@ const AdminDashboard = () => {
                           <TableCell>{getStaffStatusIndicator(staff.status)}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="ghost" onClick={() => toast.success(`Viewing ${staff.name}'s profile`)}>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => handleViewDetails('staff', staff.name)}
+                              >
+                                <View className="h-4 w-4 mr-1" />
                                 View
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => toast.success(`Editing ${staff.name}'s details`)}>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleEdit('staff', staff.name)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
                                 Edit
                               </Button>
                             </div>
