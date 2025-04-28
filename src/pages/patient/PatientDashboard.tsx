@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -110,12 +109,9 @@ const PatientDashboard = () => {
             <h1 className="text-3xl font-bold mb-1">Patient Dashboard</h1>
             <p className="text-gray-600">Welcome, {patientData.name} • ID: {patientData.patientId}</p>
           </div>
-          <Button onClick={simulateStatusChange} variant="outline">
-            Demo: Change Status
-          </Button>
         </div>
 
-        {/* Queue Status Section with the new indicator */}
+        {/* Queue Status Section with the indicator */}
         <QueueStatusIndicator 
           status={currentStatus} 
           position={currentStatus === 'waiting' ? queuePosition : undefined} 
