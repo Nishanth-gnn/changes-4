@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,7 +18,7 @@ import {
   Activity,
   CheckCircle,
   AlertCircle,
-  View,
+  Eye as View,
   Edit,
   Save
 } from "lucide-react";
@@ -50,12 +49,14 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
+// Initial data that would normally come from a database
 const adminData = {
   name: "Admin User",
   role: "System Administrator"
 };
 
-const departmentStats = [
+// Department data
+const initialDepartmentStats = [
   {
     id: "d1",
     name: "Cardiology",
@@ -106,7 +107,8 @@ const departmentStats = [
   }
 ];
 
-const staffList = [
+// Staff data
+const initialStaffList = [
   {
     id: "s1",
     name: "Dr. Sarah Smith",
@@ -159,6 +161,10 @@ const systemMetrics = {
 };
 
 const AdminDashboard = () => {
+  // State to track the updated data
+  const [departmentStats, setDepartmentStats] = useState(initialDepartmentStats);
+  const [staffList, setStaffList] = useState(initialStaffList);
+
   const [searchDepartment, setSearchDepartment] = useState("");
   const [searchStaff, setSearchStaff] = useState("");
   
@@ -177,6 +183,10 @@ const AdminDashboard = () => {
   // Editable form states
   const [editableDepartment, setEditableDepartment] = useState<any>(null);
   const [editableStaff, setEditableStaff] = useState<any>(null);
+
+  // Track if changes were made
+  const [departmentChanged, setDepartmentChanged] = useState(false);
+  const [staffChanged, setStaffChanged] = useState(false);
   
   const filteredDepartments = departmentStats.filter(dep =>
     dep.name.toLowerCase().includes(searchDepartment.toLowerCase())
@@ -232,47 +242,63 @@ const AdminDashboard = () => {
       setSelectedDepartment(item);
       setEditableDepartment({...item});
       setEditDepartmentDialog(true);
+      setDepartmentChanged(false);
     } else {
       setSelectedStaff(item);
       setEditableStaff({...item});
       setEditStaffDialog(true);
+      setStaffChanged(false);
     }
     
     toast.success(`Editing ${type}`, {
       description: `Opening edit form for ${item.name}`
     });
   };
+
+  const handleDepartmentInputChange = (field: string, value: any) => {
+    setEditableDepartment({
+      ...editableDepartment,
+      [field]: value
+    });
+    setDepartmentChanged(true);
+  };
+
+  const handleStaffInputChange = (field: string, value: any) => {
+    setEditableStaff({
+      ...editableStaff,
+      [field]: value
+    });
+    setStaffChanged(true);
+  };
   
   const handleSaveDepartment = () => {
-    // In a real app, you would update the backend here
-    // For now, we'll just update the local state
+    // Update the department stats with the edited data
     const updatedDepartments = departmentStats.map(dept => 
       dept.id === editableDepartment.id ? editableDepartment : dept
     );
     
-    // Normally we would update a state variable here, but for demo purposes
-    // we'll just show a toast notification
+    setDepartmentStats(updatedDepartments);
     setEditDepartmentDialog(false);
     
     toast.success(`Department updated`, {
       description: `${editableDepartment.name} has been updated successfully.`
     });
+    setDepartmentChanged(false);
   };
   
   const handleSaveStaff = () => {
-    // In a real app, you would update the backend here
-    // For now, we'll just update the local state
+    // Update the staff list with the edited data
     const updatedStaff = staffList.map(staff => 
       staff.id === editableStaff.id ? editableStaff : staff
     );
     
-    // Normally we would update a state variable here, but for demo purposes
-    // we'll just show a toast notification
+    setStaffList(updatedStaff);
     setEditStaffDialog(false);
     
     toast.success(`Staff member updated`, {
       description: `${editableStaff.name}'s information has been updated successfully.`
     });
+    setStaffChanged(false);
   };
 
   return (
@@ -667,7 +693,7 @@ const AdminDashboard = () => {
                         <input
                           type="checkbox"
                           id="email-notifications"
-                          checked
+                          defaultChecked
                           className="rounded border-gray-300 text-primary focus:ring-primary"
                           onChange={() => toast.success("Email notification settings updated")}
                         />
@@ -678,7 +704,7 @@ const AdminDashboard = () => {
                         <input
                           type="checkbox"
                           id="sms-notifications"
-                          checked
+                          defaultChecked
                           className="rounded border-gray-300 text-primary focus:ring-primary"
                           onChange={() => toast.success("SMS notification settings updated")}
                         />
@@ -689,7 +715,7 @@ const AdminDashboard = () => {
                         <input
                           type="checkbox"
                           id="queue-updates"
-                          checked
+                          defaultChecked
                           className="rounded border-gray-300 text-primary focus:ring-primary"
                           onChange={() => toast.success("Queue update settings updated")}
                         />
@@ -700,7 +726,7 @@ const AdminDashboard = () => {
                         <input
                           type="checkbox"
                           id="appointment-reminders"
-                          checked
+                          defaultChecked
                           className="rounded border-gray-300 text-primary focus:ring-primary"
                           onChange={() => toast.success("Appointment reminder settings updated")}
                         />
@@ -708,117 +734,90 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => toast.info("Settings reset to defaults")}>
-                      Reset to Default
-                    </Button>
-                    <Button onClick={() => toast.success("Settings saved successfully!")}>
-                      Save Settings
-                    </Button>
-                  </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
-      
-      {/* View Department Dialog */}
+
+      {/* Department View Dialog */}
       <Dialog open={viewDepartmentDialog} onOpenChange={setViewDepartmentDialog}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Department Details</DialogTitle>
             <DialogDescription>
-              Detailed information about the department.
+              Viewing department information
             </DialogDescription>
           </DialogHeader>
           
           {selectedDepartment && (
-            <div className="py-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-gray-500">Department Name</Label>
-                  <p className="font-medium">{selectedDepartment.name}</p>
-                </div>
-                <div>
-                  <Label className="text-sm text-gray-500">Status</Label>
-                  <div>{getDepartmentStatusBadge(selectedDepartment.status)}</div>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Department Name</Label>
+                <p className="font-medium">{selectedDepartment.name}</p>
               </div>
-              
+              <div>
+                <Label>Status</Label>
+                <p className="mt-1">{getDepartmentStatusBadge(selectedDepartment.status)}</p>
+              </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-sm text-gray-500">Patients Today</Label>
+                  <Label>Patients Today</Label>
                   <p className="font-medium">{selectedDepartment.patientsToday}</p>
                 </div>
                 <div>
-                  <Label className="text-sm text-gray-500">Avg. Wait Time</Label>
+                  <Label>Average Wait Time</Label>
                   <p className="font-medium">{selectedDepartment.avgWaitTime} min</p>
                 </div>
                 <div>
-                  <Label className="text-sm text-gray-500">Staff Available</Label>
+                  <Label>Staff Available</Label>
                   <p className="font-medium">{selectedDepartment.staffAvailable}</p>
-                </div>
-              </div>
-              
-              <div>
-                <Label className="text-sm text-gray-500">Department Analytics</Label>
-                <div className="h-[200px] bg-gray-100 rounded-md mt-2 flex items-center justify-center">
-                  <p className="text-gray-500">Department analytics chart would display here</p>
                 </div>
               </div>
             </div>
           )}
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewDepartmentDialog(false)}>
-              Close
-            </Button>
+            <Button variant="outline" onClick={() => setViewDepartmentDialog(false)}>Close</Button>
             <Button onClick={() => {
               setViewDepartmentDialog(false);
               handleEdit('department', selectedDepartment);
             }}>
-              <Edit className="h-4 w-4 mr-1" /> Edit
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* Edit Department Dialog */}
+
+      {/* Department Edit Dialog */}
       <Dialog open={editDepartmentDialog} onOpenChange={setEditDepartmentDialog}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Department</DialogTitle>
             <DialogDescription>
-              Make changes to the department information.
+              Make changes to department information
             </DialogDescription>
           </DialogHeader>
           
           {editableDepartment && (
-            <div className="py-4 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="dept-name">Department Name</Label>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-dept-name">Department Name</Label>
                 <Input 
-                  id="dept-name" 
+                  id="edit-dept-name" 
                   value={editableDepartment.name} 
-                  onChange={(e) => setEditableDepartment({
-                    ...editableDepartment,
-                    name: e.target.value
-                  })}
+                  onChange={(e) => handleDepartmentInputChange('name', e.target.value)}
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="dept-status">Status</Label>
+              <div>
+                <Label htmlFor="edit-dept-status">Status</Label>
                 <Select 
                   value={editableDepartment.status}
-                  onValueChange={(value) => setEditableDepartment({
-                    ...editableDepartment,
-                    status: value
-                  })}
+                  onValueChange={(value) => handleDepartmentInputChange('status', value)}
                 >
-                  <SelectTrigger id="dept-status">
+                  <SelectTrigger id="edit-dept-status">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -829,42 +828,32 @@ const AdminDashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
               <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="patients-today">Patients Today</Label>
+                <div>
+                  <Label htmlFor="edit-patients">Patients Today</Label>
                   <Input 
-                    id="patients-today" 
-                    type="number" 
+                    id="edit-patients" 
+                    type="number"
                     value={editableDepartment.patientsToday} 
-                    onChange={(e) => setEditableDepartment({
-                      ...editableDepartment,
-                      patientsToday: parseInt(e.target.value) || 0
-                    })}
+                    onChange={(e) => handleDepartmentInputChange('patientsToday', parseInt(e.target.value))}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="avg-wait">Avg. Wait Time (min)</Label>
+                <div>
+                  <Label htmlFor="edit-wait-time">Average Wait (min)</Label>
                   <Input 
-                    id="avg-wait" 
-                    type="number" 
+                    id="edit-wait-time" 
+                    type="number"
                     value={editableDepartment.avgWaitTime} 
-                    onChange={(e) => setEditableDepartment({
-                      ...editableDepartment,
-                      avgWaitTime: parseInt(e.target.value) || 0
-                    })}
+                    onChange={(e) => handleDepartmentInputChange('avgWaitTime', parseInt(e.target.value))}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="staff-available">Staff Available</Label>
+                <div>
+                  <Label htmlFor="edit-staff-avail">Staff Available</Label>
                   <Input 
-                    id="staff-available" 
-                    type="number" 
+                    id="edit-staff-avail" 
+                    type="number"
                     value={editableDepartment.staffAvailable} 
-                    onChange={(e) => setEditableDepartment({
-                      ...editableDepartment,
-                      staffAvailable: parseInt(e.target.value) || 0
-                    })}
+                    onChange={(e) => handleDepartmentInputChange('staffAvailable', parseInt(e.target.value))}
                   />
                 </div>
               </div>
@@ -872,161 +861,76 @@ const AdminDashboard = () => {
           )}
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDepartmentDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveDepartment}>
-              <Save className="h-4 w-4 mr-1" /> Save Changes
+            <Button variant="outline" onClick={() => setEditDepartmentDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleSaveDepartment}
+              disabled={!departmentChanged}
+              className="flex items-center"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* View Staff Dialog */}
+
+      {/* Staff View Dialog */}
       <Dialog open={viewStaffDialog} onOpenChange={setViewStaffDialog}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Staff Details</DialogTitle>
+            <DialogTitle>Staff Member Details</DialogTitle>
             <DialogDescription>
-              Detailed information about staff member.
+              Viewing staff information
             </DialogDescription>
           </DialogHeader>
           
           {selectedStaff && (
-            <div className="py-4 space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xl font-bold">
-                  {selectedStaff.name.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">{selectedStaff.name}</h3>
-                  <p className="text-gray-500">{selectedStaff.role}</p>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Name</Label>
+                <p className="font-medium">{selectedStaff.name}</p>
               </div>
-              
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm text-gray-500">Department</Label>
-                  <p className="font-medium">{selectedStaff.department}</p>
+                  <Label>Role</Label>
+                  <p className="font-medium">{selectedStaff.role}</p>
                 </div>
                 <div>
-                  <Label className="text-sm text-gray-500">Status</Label>
-                  <div>{getStaffStatusIndicator(selectedStaff.status)}</div>
+                  <Label>Department</Label>
+                  <p className="font-medium">{selectedStaff.department}</p>
                 </div>
               </div>
-              
               <div>
-                <Label className="text-sm text-gray-500">Activity Summary</Label>
-                <div className="h-[150px] bg-gray-100 rounded-md mt-2 flex items-center justify-center">
-                  <p className="text-gray-500">Staff activity chart would display here</p>
-                </div>
+                <Label>Status</Label>
+                <p className="mt-1">{getStaffStatusIndicator(selectedStaff.status)}</p>
               </div>
             </div>
           )}
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewStaffDialog(false)}>
-              Close
-            </Button>
+            <Button variant="outline" onClick={() => setViewStaffDialog(false)}>Close</Button>
             <Button onClick={() => {
               setViewStaffDialog(false);
               handleEdit('staff', selectedStaff);
             }}>
-              <Edit className="h-4 w-4 mr-1" /> Edit
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* Edit Staff Dialog */}
+
+      {/* Staff Edit Dialog */}
       <Dialog open={editStaffDialog} onOpenChange={setEditStaffDialog}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Staff Member</DialogTitle>
             <DialogDescription>
-              Make changes to staff member information.
+              Make changes to staff information
             </DialogDescription>
           </DialogHeader>
           
           {editableStaff && (
-            <div className="py-4 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="staff-name">Full Name</Label>
-                <Input 
-                  id="staff-name" 
-                  value={editableStaff.name} 
-                  onChange={(e) => setEditableStaff({
-                    ...editableStaff,
-                    name: e.target.value
-                  })}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="staff-role">Role</Label>
-                <Input 
-                  id="staff-role" 
-                  value={editableStaff.role} 
-                  onChange={(e) => setEditableStaff({
-                    ...editableStaff,
-                    role: e.target.value
-                  })}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="staff-department">Department</Label>
-                <Select 
-                  value={editableStaff.department}
-                  onValueChange={(value) => setEditableStaff({
-                    ...editableStaff,
-                    department: value
-                  })}
-                >
-                  <SelectTrigger id="staff-department">
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departmentStats.map(dept => (
-                      <SelectItem key={dept.id} value={dept.name}>{dept.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="staff-status">Status</Label>
-                <Select 
-                  value={editableStaff.status}
-                  onValueChange={(value) => setEditableStaff({
-                    ...editableStaff,
-                    status: value
-                  })}
-                >
-                  <SelectTrigger id="staff-status">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Online</SelectItem>
-                    <SelectItem value="offline">Offline</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditStaffDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveStaff}>
-              <Save className="h-4 w-4 mr-1" /> Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Layout>
-  );
-};
-
-export default AdminDashboard;
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-staff-name
