@@ -120,6 +120,12 @@ const PatientDashboard = () => {
     // Add the new appointment to upcoming appointments
     setUpcomingAppointments(prev => [...prev, newAppointment]);
     toast.success("Appointment request submitted successfully!");
+    
+    // Navigate to the upcoming appointments tab
+    const upcomingTabTrigger = document.querySelector('[data-value="upcoming"]') as HTMLElement;
+    if (upcomingTabTrigger) {
+      upcomingTabTrigger.click();
+    }
   };
 
   const handleReschedule = (appointment: Appointment) => {
@@ -204,7 +210,12 @@ const PatientDashboard = () => {
                     <p className="text-gray-500">No upcoming appointments.</p>
                     <Button 
                       className="mt-4"
-                      onClick={() => document.querySelector('[data-value="book"]')?.click()}
+                      onClick={() => {
+                        const bookTab = document.querySelector('[data-value="book"]') as HTMLElement;
+                        if (bookTab) {
+                          bookTab.click();
+                        }
+                      }}
                     >
                       Book an Appointment
                     </Button>
