@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Calendar as CalendarIcon } from "lucide-react";
 
 interface AppointmentCardProps {
   appointment: {
@@ -15,7 +15,7 @@ interface AppointmentCardProps {
     notes?: string;
   };
   type: 'upcoming' | 'past';
-  onReschedule?: (id: string) => void;
+  onReschedule?: (appointment: any) => void;
   onCancel?: (id: string) => void;
 }
 
@@ -37,6 +37,18 @@ const AppointmentCard = ({ appointment, type, onReschedule, onCancel }: Appointm
         return <Badge variant="outline" className="bg-green-50 text-green-600 hover:bg-green-50">Completed</Badge>;
       default:
         return <Badge variant="outline">Unknown</Badge>;
+    }
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel(appointment.id);
+    }
+  };
+
+  const handleReschedule = () => {
+    if (onReschedule) {
+      onReschedule(appointment);
     }
   };
 
@@ -81,7 +93,7 @@ const AppointmentCard = ({ appointment, type, onReschedule, onCancel }: Appointm
                 variant="outline" 
                 size="sm" 
                 className="flex-1"
-                onClick={() => onReschedule && onReschedule(appointment.id)}
+                onClick={handleReschedule}
               >
                 Reschedule
               </Button>
@@ -89,7 +101,7 @@ const AppointmentCard = ({ appointment, type, onReschedule, onCancel }: Appointm
                 variant="destructive" 
                 size="sm" 
                 className="flex-1"
-                onClick={() => onCancel && onCancel(appointment.id)}
+                onClick={handleCancel}
               >
                 Cancel
               </Button>
