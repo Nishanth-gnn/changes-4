@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -933,4 +934,70 @@ const AdminDashboard = () => {
           {editableStaff && (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="edit-staff-name
+                <Label htmlFor="edit-staff-name">Name</Label>
+                <Input 
+                  id="edit-staff-name" 
+                  value={editableStaff.name} 
+                  onChange={(e) => handleStaffInputChange('name', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-staff-role">Role</Label>
+                <Input 
+                  id="edit-staff-role" 
+                  value={editableStaff.role} 
+                  onChange={(e) => handleStaffInputChange('role', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-staff-department">Department</Label>
+                <Select 
+                  value={editableStaff.department}
+                  onValueChange={(value) => handleStaffInputChange('department', value)}
+                >
+                  <SelectTrigger id="edit-staff-department">
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departmentStats.map(dept => (
+                      <SelectItem key={dept.id} value={dept.name}>{dept.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="edit-staff-status">Status</Label>
+                <Select 
+                  value={editableStaff.status}
+                  onValueChange={(value) => handleStaffInputChange('status', value)}
+                >
+                  <SelectTrigger id="edit-staff-status">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Online</SelectItem>
+                    <SelectItem value="offline">Offline</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditStaffDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleSaveStaff}
+              disabled={!staffChanged}
+              className="flex items-center"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Layout>
+  );
+};
+
+export default AdminDashboard;
