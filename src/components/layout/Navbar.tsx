@@ -64,9 +64,6 @@ const Navbar = () => {
                   <SignInButton />
                 </Link>
               </Button>
-              <Button asChild>
-                <Link to="/register">Register</Link>
-              </Button>
             </SignedOut>
           </div>
           <div className="flex items-center sm:hidden">
@@ -110,9 +107,6 @@ const Navbar = () => {
                     <Link to="/auth/select-role">
                       <SignInButton />
                     </Link>
-                  </Button>
-                  <Button asChild className="w-full">
-                    <Link to="/register">Register</Link>
                   </Button>
                 </SignedOut>
               </div>
