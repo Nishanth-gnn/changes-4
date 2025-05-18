@@ -60,7 +60,9 @@ const Navbar = () => {
             </SignedIn>
             <SignedOut>
               <Button asChild variant="outline">
-                <SignInButton redirectUrl="/auth/select-role" />
+                <Link to="/auth/select-role">
+                  <SignInButton />
+                </Link>
               </Button>
               <Button asChild>
                 <Link to="/register">Register</Link>
@@ -105,7 +107,9 @@ const Navbar = () => {
                 </SignedIn>
                 <SignedOut>
                   <Button asChild variant="outline" className="w-full">
-                    <SignInButton redirectUrl="/auth/select-role" />
+                    <Link to="/auth/select-role">
+                      <SignInButton />
+                    </Link>
                   </Button>
                   <Button asChild className="w-full">
                     <Link to="/register">Register</Link>
