@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 // Auth pages
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import SelectRole from "./pages/auth/SelectRole";
 
 // Portal pages
 import PatientDashboard from "./pages/patient/PatientDashboard";
@@ -37,6 +38,7 @@ const App = () => (
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth/select-role" element={<SelectRole />} />
           
           {/* Portal Routes */}
           <Route path="/patient" element={<PatientDashboard />} />
