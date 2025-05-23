@@ -32,6 +32,7 @@ interface Appointment {
   time: string;
   status: string;
   notes?: string;
+  isEmergency?: "yes" | "no";
 }
 
 const PatientDashboard = () => {
@@ -148,6 +149,7 @@ const PatientDashboard = () => {
     }
   };
 
+  // Handle submitting an appointment
   const handleSubmitAppointment = (data: any) => {
     // Create a new appointment from submitted form data
     const newAppointment: Appointment = {
@@ -157,7 +159,8 @@ const PatientDashboard = () => {
       date: data.date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
       time: data.time,
       status: "scheduled",
-      notes: data.notes || undefined
+      notes: data.notes || undefined,
+      isEmergency: data.isEmergency
     };
     
     // Add the new appointment to upcoming appointments
@@ -172,7 +175,12 @@ const PatientDashboard = () => {
       }));
     }
     
-    toast.success("Appointment request submitted successfully!");
+    // Show a different toast message for emergency appointments
+    if (data.isEmergency === "yes") {
+      toast.success("Emergency appointment request submitted successfully!");
+    } else {
+      toast.success("Appointment request submitted successfully!");
+    }
     
     // Navigate to the upcoming appointments tab
     const upcomingTabTrigger = document.querySelector('[data-value="upcoming"]') as HTMLElement;

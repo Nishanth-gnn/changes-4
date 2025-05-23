@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { Calendar, Clock, Calendar as CalendarIcon, AlertTriangle } from "lucide-react";
 
 interface AppointmentCardProps {
   appointment: {
@@ -13,6 +13,7 @@ interface AppointmentCardProps {
     time: string;
     status: string;
     notes?: string;
+    isEmergency?: "yes" | "no";
   };
   type: 'upcoming' | 'past';
   onReschedule?: (appointment: any) => void;
@@ -67,15 +68,27 @@ const AppointmentCard = ({
     }
   };
 
+  const isEmergency = appointment.isEmergency === "yes";
+  const cardClass = isEmergency 
+    ? "card-hover border-orange-300 bg-orange-50" 
+    : "card-hover";
+
   return (
-    <Card className="card-hover">
+    <Card className={cardClass}>
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
             <h3 className="text-xl font-semibold">{appointment.department}</h3>
           </div>
-          {getStatusBadge(appointment.status)}
+          <div className="flex items-center gap-2">
+            {isEmergency && (
+              <Badge variant="outline" className="bg-orange-100 text-orange-600 hover:bg-orange-100 mr-2">
+                <AlertTriangle className="h-3 w-3 mr-1" /> Emergency
+              </Badge>
+            )}
+            {getStatusBadge(appointment.status)}
+          </div>
         </div>
         
         <div className="space-y-4">
