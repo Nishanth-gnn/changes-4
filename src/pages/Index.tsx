@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
@@ -158,11 +157,6 @@ const Index = () => {
                     <span>Manage personal information</span>
                   </li>
                 </ul>
-                <div className="mt-6 text-center">
-                  <Button asChild>
-                    <Link to="/patient">Patient Access</Link>
-                  </Button>
-                </div>
               </CardContent>
             </Card>
             
@@ -190,11 +184,6 @@ const Index = () => {
                     <span>View performance metrics</span>
                   </li>
                 </ul>
-                <div className="mt-6 text-center">
-                  <Button asChild>
-                    <Link to="/staff">Staff Access</Link>
-                  </Button>
-                </div>
               </CardContent>
             </Card>
             
@@ -222,11 +211,6 @@ const Index = () => {
                     <span>Monitor system performance</span>
                   </li>
                 </ul>
-                <div className="mt-6 text-center">
-                  <Button asChild>
-                    <Link to="/admin">Admin Access</Link>
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           </div>

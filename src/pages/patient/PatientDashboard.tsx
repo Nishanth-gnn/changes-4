@@ -10,6 +10,16 @@ import QueueStatusIndicator from "@/components/patient/QueueStatusIndicator";
 import AppointmentCard from "@/components/patient/AppointmentCard";
 import AppointmentForm from "@/components/patient/AppointmentForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import DatePicker from "@/components/DatePicker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -75,6 +85,10 @@ const PatientDashboard = () => {
   const [newDate, setNewDate] = useState<Date | undefined>(undefined);
   const [newTime, setNewTime] = useState("");
 
+  // Cancel dialog state
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<string | null>(null);
+
   // Mock patient data
   const patientData = {
     name: "Alex Johnson",
@@ -135,10 +149,19 @@ const PatientDashboard = () => {
     setRescheduleDialogOpen(true);
   };
 
-  const handleCancel = (id: string) => {
-    // Remove the appointment from upcoming appointments
-    setUpcomingAppointments(prev => prev.filter(apt => apt.id !== id));
-    toast.success("Appointment cancelled successfully.");
+  const initiateCancel = (id: string) => {
+    setAppointmentToCancel(id);
+    setCancelDialogOpen(true);
+  };
+
+  const handleConfirmCancel = () => {
+    if (appointmentToCancel) {
+      // Remove the appointment from upcoming appointments
+      setUpcomingAppointments(prev => prev.filter(apt => apt.id !== appointmentToCancel));
+      toast.success("Appointment cancelled successfully.");
+      setCancelDialogOpen(false);
+      setAppointmentToCancel(null);
+    }
   };
 
   const handleRescheduleSubmit = () => {
@@ -201,7 +224,7 @@ const PatientDashboard = () => {
                   appointment={appointment}
                   type="upcoming"
                   onReschedule={handleReschedule}
-                  onCancel={handleCancel}
+                  onCancel={initiateCancel}
                 />
               ))}
               {upcomingAppointments.length === 0 && (
@@ -253,7 +276,10 @@ const PatientDashboard = () => {
       </div>
 
       {/* Reschedule Dialog */}
-      <Dialog open={rescheduleDialogOpen} onOpenChange={setRescheduleDialogOpen}>
+      <Dialog open={rescheduleDialogOpen} onOpenChange={(open) => {
+        setRescheduleDialogOpen(open);
+        if (!open) setAppointmentToReschedule(null);
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Reschedule Appointment</DialogTitle>
@@ -293,6 +319,25 @@ const PatientDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={cancelDialogOpen} onOpenChange={(open) => {
+        setCancelDialogOpen(open);
+        if (!open) setAppointmentToCancel(null);
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Appointment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this appointment? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, Keep Appointment</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCancel}>Yes, Cancel Appointment</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 };

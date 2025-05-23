@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +27,7 @@ const staffData = {
   role: "Specialist"
 };
 
-const queueData = {
+const initialQueueData = {
   current: [
     {
       id: "p1",
@@ -94,7 +95,8 @@ const departmentStats = {
 };
 
 const StaffDashboard = () => {
-  const [queue, setQueue] = useState(queueData.current);
+  const [queue, setQueue] = useState(initialQueueData.current);
+  const [upcomingAppointments, setUpcomingAppointments] = useState(initialQueueData.upcoming);
   
   const movePatient = (patientId: string, direction: 'up' | 'down') => {
     const newQueue = [...queue];
@@ -125,6 +127,26 @@ const StaffDashboard = () => {
     } else {
       toast.success(`Patient status updated to ${newStatus}`);
     }
+  };
+
+  const addToQueue = (patientId: string) => {
+    // Find the patient in upcoming appointments
+    const patientToAdd = upcomingAppointments.find(patient => patient.id === patientId);
+    if (!patientToAdd) return;
+    
+    // Add patient to queue
+    const patientForQueue = {
+      ...patientToAdd,
+      waitTime: 0,
+      status: 'waiting'
+    };
+    
+    setQueue(prev => [...prev, patientForQueue]);
+    
+    // Remove from upcoming appointments
+    setUpcomingAppointments(prev => prev.filter(patient => patient.id !== patientId));
+    
+    toast.success(`${patientToAdd.name} added to current queue`);
   };
 
   const getStatusBadge = (status: string) => {
@@ -370,7 +392,7 @@ const StaffDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {queueData.upcoming.map((patient) => (
+                  {upcomingAppointments.map((patient) => (
                     <div key={patient.id} className="p-4 border rounded-md bg-white">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
@@ -395,14 +417,7 @@ const StaffDashboard = () => {
                         <Button size="sm" variant="outline">View Details</Button>
                         <Button 
                           size="sm"
-                          onClick={() => {
-                            setQueue(prev => [...prev, {
-                              ...patient,
-                              waitTime: 0,
-                              status: 'waiting'
-                            }]);
-                            toast.success(`${patient.name} added to current queue`);
-                          }}
+                          onClick={() => addToQueue(patient.id)}
                         >
                           Add to Queue
                         </Button>
@@ -410,7 +425,7 @@ const StaffDashboard = () => {
                     </div>
                   ))}
 
-                  {queueData.upcoming.length === 0 && (
+                  {upcomingAppointments.length === 0 && (
                     <div className="text-center py-12">
                       <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-xl font-medium text-gray-600">No Upcoming Appointments</h3>
