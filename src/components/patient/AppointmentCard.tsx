@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -119,16 +118,6 @@ const AppointmentCard = ({
             <div className="pt-2 flex flex-col gap-3">
               {isEmergency ? (
                 <div className="flex gap-3">
-                  {hasQueueStatus && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1"
-                      onClick={handleShowQueueStatus}
-                    >
-                      Queue Status
-                    </Button>
-                  )}
                   <Button 
                     variant="destructive" 
                     size="sm" 

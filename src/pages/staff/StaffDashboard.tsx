@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +13,8 @@ import {
   AlertCircle,
   ArrowUp,
   ArrowDown,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -59,7 +59,8 @@ const initialQueueData = {
       patientId: "P12348",
       time: "10:45 AM",
       waitTime: 50,
-      status: "waiting"
+      status: "waiting",
+      isEmergency: true
     }
   ],
   upcoming: [
@@ -149,6 +150,20 @@ const StaffDashboard = () => {
     toast.success(`${patientToAdd.name} added to current queue`);
   };
 
+  const prioritizePatient = (patientId: string) => {
+    const newQueue = [...queue];
+    const patientIndex = newQueue.findIndex(patient => patient.id === patientId);
+    
+    if (patientIndex > 0) {
+      // Remove patient from current position
+      const patient = newQueue.splice(patientIndex, 1)[0];
+      // Add to the beginning of the queue
+      newQueue.unshift(patient);
+      setQueue(newQueue);
+      toast.success(`${patient.name} has been prioritized`);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'in-consultation':
@@ -235,85 +250,114 @@ const StaffDashboard = () => {
                   <CardContent>
                     <div className="space-y-4">
                       {queue.length > 0 ? (
-                        queue.map((patient, index) => (
-                          <div 
-                            key={patient.id} 
-                            className={`p-4 border rounded-md ${
-                              patient.status === 'in-consultation' ? 'bg-primary/5 border-primary/20' : 'bg-white'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <Avatar className="h-10 w-10 mr-4">
-                                  <AvatarFallback>{patient.name.charAt(0)}{patient.name.split(' ')[1]?.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="font-medium">{patient.name}</p>
-                                  <p className="text-sm text-gray-500">ID: {patient.patientId}</p>
+                        queue.map((patient, index) => {
+                          const isEmergency = patient.id === "p4"; // Emily Davis is emergency
+                          
+                          return (
+                            <div 
+                              key={patient.id} 
+                              className={`p-4 border rounded-md ${
+                                patient.status === 'in-consultation' 
+                                  ? 'bg-primary/5 border-primary/20' 
+                                  : isEmergency 
+                                    ? 'bg-orange-50 border-orange-300' 
+                                    : 'bg-white'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <Avatar className="h-10 w-10 mr-4">
+                                    <AvatarFallback>{patient.name.charAt(0)}{patient.name.split(' ')[1]?.charAt(0)}</AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium">
+                                      {patient.name}
+                                      {isEmergency && (
+                                        <Badge variant="outline" className="bg-orange-100 text-orange-600 hover:bg-orange-100 ml-2">
+                                          <AlertTriangle className="h-3 w-3 mr-1" /> Emergency
+                                        </Badge>
+                                      )}
+                                    </p>
+                                    <p className="text-sm text-gray-500">ID: {patient.patientId}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  {!isEmergency && (
+                                    <div className="text-right">
+                                      <p className="text-sm">Appointment: <span className="font-medium">{patient.time}</span></p>
+                                      <p className="text-sm text-gray-500">Waiting: {patient.waitTime} min</p>
+                                    </div>
+                                  )}
+                                  {getStatusBadge(patient.status)}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3">
-                                <div className="text-right">
-                                  <p className="text-sm">Appointment: <span className="font-medium">{patient.time}</span></p>
-                                  <p className="text-sm text-gray-500">Waiting: {patient.waitTime} min</p>
-                                </div>
-                                {getStatusBadge(patient.status)}
-                              </div>
-                            </div>
-                            
-                            <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                              <div className="flex gap-1">
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost" 
-                                  disabled={index === 0}
-                                  onClick={() => movePatient(patient.id, 'up')}
-                                >
-                                  <ArrowUp className="h-4 w-4" />
-                                  <span className="sr-only">Move up</span>
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost" 
-                                  disabled={index === queue.length - 1}
-                                  onClick={() => movePatient(patient.id, 'down')}
-                                >
-                                  <ArrowDown className="h-4 w-4" />
-                                  <span className="sr-only">Move down</span>
-                                </Button>
-                              </div>
-                              <div className="flex gap-2">
-                                {patient.status === 'waiting' && (
+                              
+                              <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                                <div className="flex gap-1">
                                   <Button 
                                     size="sm" 
-                                    onClick={() => updatePatientStatus(patient.id, 'in-consultation')}
+                                    variant="ghost" 
+                                    disabled={index === 0}
+                                    onClick={() => movePatient(patient.id, 'up')}
                                   >
-                                    <ArrowRight className="mr-2 h-4 w-4" />
-                                    Start Consultation
+                                    <ArrowUp className="h-4 w-4" />
+                                    <span className="sr-only">Move up</span>
                                   </Button>
-                                )}
-                                {patient.status === 'in-consultation' && (
                                   <Button 
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => updatePatientStatus(patient.id, 'completed')}
+                                    size="sm" 
+                                    variant="ghost" 
+                                    disabled={index === queue.length - 1}
+                                    onClick={() => movePatient(patient.id, 'down')}
                                   >
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Complete
+                                    <ArrowDown className="h-4 w-4" />
+                                    <span className="sr-only">Move down</span>
                                   </Button>
-                                )}
-                                <Button 
-                                  size="sm" 
-                                  variant={patient.status === 'no-show' ? 'default' : 'outline'}
-                                  className={patient.status === 'no-show' ? 'bg-destructive' : ''}
-                                  onClick={() => updatePatientStatus(patient.id, patient.status === 'no-show' ? 'waiting' : 'no-show')}
-                                >
-                                  {patient.status === 'no-show' ? 'Mark Present' : 'No Show'}
-                                </Button>
+                                </div>
+                                <div className="flex gap-2">
+                                  {isEmergency && patient.status === 'waiting' && (
+                                    <Button 
+                                      size="sm"
+                                      variant="secondary"
+                                      className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-300"
+                                      onClick={() => prioritizePatient(patient.id)}
+                                    >
+                                      <ArrowUp className="mr-2 h-4 w-4" />
+                                      Prioritize
+                                    </Button>
+                                  )}
+                                  
+                                  {patient.status === 'waiting' && (
+                                    <Button 
+                                      size="sm" 
+                                      onClick={() => updatePatientStatus(patient.id, 'in-consultation')}
+                                    >
+                                      <ArrowRight className="mr-2 h-4 w-4" />
+                                      Start Consultation
+                                    </Button>
+                                  )}
+                                  {patient.status === 'in-consultation' && (
+                                    <Button 
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => updatePatientStatus(patient.id, 'completed')}
+                                    >
+                                      <CheckCircle className="mr-2 h-4 w-4" />
+                                      Complete
+                                    </Button>
+                                  )}
+                                  <Button 
+                                    size="sm" 
+                                    variant={patient.status === 'no-show' ? 'default' : 'outline'}
+                                    className={patient.status === 'no-show' ? 'bg-destructive' : ''}
+                                    onClick={() => updatePatientStatus(patient.id, patient.status === 'no-show' ? 'waiting' : 'no-show')}
+                                  >
+                                    {patient.status === 'no-show' ? 'Mark Present' : 'No Show'}
+                                  </Button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))
+                          );
+                        })
                       ) : (
                         <div className="text-center py-12">
                           <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
