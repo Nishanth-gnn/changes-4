@@ -89,6 +89,10 @@ const PatientDashboard = () => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState<string | null>(null);
 
+  // Queue status dialog state
+  const [queueStatusDialogOpen, setQueueStatusDialogOpen] = useState(false);
+  const [selectedQueueStatus, setSelectedQueueStatus] = useState<string | null>(null);
+
   // Queue status tracking
   const [appointmentQueueStatuses, setAppointmentQueueStatuses] = useState<Record<string, {
     position: number;
@@ -236,6 +240,11 @@ const PatientDashboard = () => {
     toast.success("Appointment rescheduled successfully!");
   };
 
+  const handleShowQueueStatus = (appointmentId: string) => {
+    setSelectedQueueStatus(appointmentId);
+    setQueueStatusDialogOpen(true);
+  };
+
   return (
     <Layout>
       <div className="page-container">
@@ -258,22 +267,13 @@ const PatientDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {upcomingAppointments.map((appointment) => (
                 <div key={appointment.id} className="space-y-4">
-                  {/* Queue Status for Today's Appointments */}
-                  {appointmentQueueStatuses[appointment.id] && (
-                    <>
-                      <QueueStatusIndicator 
-                        status={currentStatus} 
-                        position={currentStatus === 'waiting' ? appointmentQueueStatuses[appointment.id].position : undefined} 
-                      />
-                      <QueueStatusCard queueStatus={appointmentQueueStatuses[appointment.id]} />
-                    </>
-                  )}
-                  
                   <AppointmentCard 
                     appointment={appointment}
                     type="upcoming"
                     onReschedule={handleReschedule}
                     onCancel={initiateCancel}
+                    onShowQueueStatus={handleShowQueueStatus}
+                    hasQueueStatus={!!appointmentQueueStatuses[appointment.id]}
                   />
                 </div>
               ))}
@@ -388,6 +388,28 @@ const PatientDashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Queue Status Dialog */}
+      <Dialog open={queueStatusDialogOpen} onOpenChange={(open) => {
+        setQueueStatusDialogOpen(open);
+        if (!open) setSelectedQueueStatus(null);
+      }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Queue Status Details</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {selectedQueueStatus && appointmentQueueStatuses[selectedQueueStatus] && (
+              <QueueStatusCard queueStatus={appointmentQueueStatuses[selectedQueueStatus]} />
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setQueueStatusDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };

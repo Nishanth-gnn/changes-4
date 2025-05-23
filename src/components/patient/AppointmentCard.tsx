@@ -17,9 +17,18 @@ interface AppointmentCardProps {
   type: 'upcoming' | 'past';
   onReschedule?: (appointment: any) => void;
   onCancel?: (id: string) => void;
+  onShowQueueStatus?: (id: string) => void;
+  hasQueueStatus?: boolean;
 }
 
-const AppointmentCard = ({ appointment, type, onReschedule, onCancel }: AppointmentCardProps) => {
+const AppointmentCard = ({ 
+  appointment, 
+  type, 
+  onReschedule, 
+  onCancel, 
+  onShowQueueStatus,
+  hasQueueStatus 
+}: AppointmentCardProps) => {
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-US', options);
@@ -49,6 +58,12 @@ const AppointmentCard = ({ appointment, type, onReschedule, onCancel }: Appointm
   const handleReschedule = () => {
     if (onReschedule) {
       onReschedule(appointment);
+    }
+  };
+
+  const handleShowQueueStatus = () => {
+    if (onShowQueueStatus) {
+      onShowQueueStatus(appointment.id);
     }
   };
 
@@ -88,23 +103,36 @@ const AppointmentCard = ({ appointment, type, onReschedule, onCancel }: Appointm
           )}
           
           {type === 'upcoming' && (
-            <div className="pt-2 flex gap-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1"
-                onClick={handleReschedule}
-              >
-                Reschedule
-              </Button>
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                className="flex-1"
-                onClick={handleCancel}
-              >
-                Cancel
-              </Button>
+            <div className="pt-2 flex flex-col gap-3">
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={handleReschedule}
+                >
+                  Reschedule
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </Button>
+              </div>
+              
+              {hasQueueStatus && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleShowQueueStatus}
+                >
+                  Queue Status
+                </Button>
+              )}
             </div>
           )}
           
