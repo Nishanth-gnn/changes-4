@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -394,7 +393,7 @@ const PatientDashboard = () => {
         setQueueStatusDialogOpen(open);
         if (!open) setSelectedQueueStatus(null);
       }}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Queue Status Details</DialogTitle>
           </DialogHeader>
