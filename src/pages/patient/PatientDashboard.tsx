@@ -89,20 +89,46 @@ const PatientDashboard = () => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState<string | null>(null);
 
+  // Queue status tracking
+  const [appointmentQueueStatuses, setAppointmentQueueStatuses] = useState<Record<string, {
+    position: number;
+    estimatedWaitTime: number;
+    totalInQueue: number;
+    department: string;
+    averageProcessingTime: number;
+  }>>({});
+
   // Mock patient data
   const patientData = {
     name: "Alex Johnson",
     patientId: "P10045872"
   };
 
-  // Mock queue status
-  const queueStatus = {
-    position: queuePosition,
-    estimatedWaitTime: 15,
-    totalInQueue: 8,
-    department: "Cardiology",
-    averageProcessingTime: 12
+  // Generate queue status for an appointment
+  const generateQueueStatus = (department: string) => {
+    return {
+      position: Math.floor(Math.random() * 5) + 1,
+      estimatedWaitTime: Math.floor(Math.random() * 20) + 10,
+      totalInQueue: Math.floor(Math.random() * 10) + 5,
+      department,
+      averageProcessingTime: Math.floor(Math.random() * 10) + 8
+    };
   };
+
+  // Initialize queue statuses for today's appointments
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const statuses: Record<string, any> = {};
+    
+    upcomingAppointments.forEach(appointment => {
+      // Only add queue status for appointments that are today or in the future
+      if (appointment.date >= today) {
+        statuses[appointment.id] = generateQueueStatus(appointment.department);
+      }
+    });
+    
+    setAppointmentQueueStatuses(statuses);
+  }, [upcomingAppointments]);
 
   // Demo function to simulate status changes
   const simulateStatusChange = () => {
@@ -133,6 +159,16 @@ const PatientDashboard = () => {
     
     // Add the new appointment to upcoming appointments
     setUpcomingAppointments(prev => [...prev, newAppointment]);
+    
+    // Generate queue status for the new appointment
+    const today = new Date().toISOString().split('T')[0];
+    if (newAppointment.date >= today) {
+      setAppointmentQueueStatuses(prev => ({
+        ...prev,
+        [newAppointment.id]: generateQueueStatus(newAppointment.department)
+      }));
+    }
+    
     toast.success("Appointment request submitted successfully!");
     
     // Navigate to the upcoming appointments tab
@@ -144,7 +180,8 @@ const PatientDashboard = () => {
 
   const handleReschedule = (appointment: Appointment) => {
     setAppointmentToReschedule(appointment);
-    setNewDate(new Date(appointment.date));
+    // Convert string date to Date object for the DatePicker
+    setNewDate(appointment.date ? new Date(appointment.date) : undefined);
     setNewTime(appointment.time);
     setRescheduleDialogOpen(true);
   };
@@ -158,6 +195,14 @@ const PatientDashboard = () => {
     if (appointmentToCancel) {
       // Remove the appointment from upcoming appointments
       setUpcomingAppointments(prev => prev.filter(apt => apt.id !== appointmentToCancel));
+      
+      // Remove the queue status for the cancelled appointment
+      setAppointmentQueueStatuses(prev => {
+        const newStatuses = {...prev};
+        delete newStatuses[appointmentToCancel];
+        return newStatuses;
+      });
+      
       toast.success("Appointment cancelled successfully.");
       setCancelDialogOpen(false);
       setAppointmentToCancel(null);
@@ -170,12 +215,15 @@ const PatientDashboard = () => {
       return;
     }
 
+    // Format the date to YYYY-MM-DD string
+    const formattedDate = newDate.toISOString().split('T')[0];
+
     // Update the appointment with new date and time
     const updatedAppointments = upcomingAppointments.map(apt => {
       if (apt.id === appointmentToReschedule.id) {
         return {
           ...apt,
-          date: newDate.toISOString().split('T')[0],
+          date: formattedDate,
           time: newTime,
         };
       }
@@ -198,16 +246,6 @@ const PatientDashboard = () => {
           </div>
         </div>
 
-        {/* Queue Status Section with the indicator */}
-        <QueueStatusIndicator 
-          status={currentStatus} 
-          position={currentStatus === 'waiting' ? queuePosition : undefined} 
-        />
-        
-        {currentStatus === 'waiting' && (
-          <QueueStatusCard queueStatus={queueStatus} />
-        )}
-
         {/* Main Content Tabs */}
         <Tabs defaultValue="upcoming" className="mt-6">
           <TabsList className="mb-8">
@@ -219,13 +257,25 @@ const PatientDashboard = () => {
           <TabsContent value="upcoming">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {upcomingAppointments.map((appointment) => (
-                <AppointmentCard 
-                  key={appointment.id}
-                  appointment={appointment}
-                  type="upcoming"
-                  onReschedule={handleReschedule}
-                  onCancel={initiateCancel}
-                />
+                <div key={appointment.id} className="space-y-4">
+                  {/* Queue Status for Today's Appointments */}
+                  {appointmentQueueStatuses[appointment.id] && (
+                    <>
+                      <QueueStatusIndicator 
+                        status={currentStatus} 
+                        position={currentStatus === 'waiting' ? appointmentQueueStatuses[appointment.id].position : undefined} 
+                      />
+                      <QueueStatusCard queueStatus={appointmentQueueStatuses[appointment.id]} />
+                    </>
+                  )}
+                  
+                  <AppointmentCard 
+                    appointment={appointment}
+                    type="upcoming"
+                    onReschedule={handleReschedule}
+                    onCancel={initiateCancel}
+                  />
+                </div>
               ))}
               {upcomingAppointments.length === 0 && (
                 <Card className="col-span-full">
@@ -289,7 +339,7 @@ const PatientDashboard = () => {
               <Label htmlFor="reschedule-date">New Date</Label>
               <DatePicker 
                 date={newDate} 
-                onDateChange={(date) => setNewDate(date as Date)} 
+                onDateChange={setNewDate} 
               />
             </div>
             <div className="space-y-2">
