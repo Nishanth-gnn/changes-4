@@ -23,16 +23,10 @@ const regularAppointmentSchema = z.object({
 });
 
 const emergencyAppointmentSchema = z.object({
-  department: z.string().min(1, "Department is required"),
-  doctor: z.string().min(1, "Doctor is required"),
-  date: z.date({
-    required_error: "Date is required",
-  }),
-  time: z.string().min(1, "Time slot is required"),
-  notes: z.string().optional(),
   emergencyType: z.enum(["injury", "accident", "disease"], {
     required_error: "Emergency type is required",
   }),
+  notes: z.string().optional(),
 });
 
 type RegularAppointmentFormValues = z.infer<typeof regularAppointmentSchema>;
@@ -58,10 +52,7 @@ const AppointmentForm = ({ onSubmit }: AppointmentFormProps) => {
   const emergencyForm = useForm<EmergencyAppointmentFormValues>({
     resolver: zodResolver(emergencyAppointmentSchema),
     defaultValues: {
-      department: "",
-      doctor: "",
       notes: "",
-      time: "",
       emergencyType: "injury",
     },
   });
@@ -82,6 +73,11 @@ const AppointmentForm = ({ onSubmit }: AppointmentFormProps) => {
     setShowEmergencyDialog(false);
     onSubmit({
       ...emergencyForm.getValues(),
+      // Set default values for required fields in the appointment object
+      department: "emergency",
+      doctor: "emergency doctor",
+      date: new Date(),
+      time: "ASAP",
       isEmergency: "yes"
     });
   };
@@ -226,74 +222,6 @@ const AppointmentForm = ({ onSubmit }: AppointmentFormProps) => {
                     </FormControl>
                     <FormMessage>{emergencyForm.formState.errors.emergencyType?.message}</FormMessage>
                   </FormItem>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormItem>
-                      <FormLabel>Department</FormLabel>
-                      <FormControl>
-                        <select
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          {...emergencyForm.register("department")}
-                        >
-                          <option value="">Select a department</option>
-                          <option value="emergency">Emergency</option>
-                          <option value="cardiology">Cardiology</option>
-                          <option value="orthopedics">Orthopedics</option>
-                          <option value="general">General Medicine</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage>{emergencyForm.formState.errors.department?.message}</FormMessage>
-                    </FormItem>
-                    
-                    <FormItem>
-                      <FormLabel>Doctor</FormLabel>
-                      <FormControl>
-                        <select
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          {...emergencyForm.register("doctor")}
-                        >
-                          <option value="">Select a doctor</option>
-                          <option value="dr-smith">Dr. Sarah Smith</option>
-                          <option value="dr-johnson">Dr. Michael Johnson</option>
-                          <option value="dr-chen">Dr. Emily Chen</option>
-                          <option value="dr-patel">Dr. Raj Patel</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage>{emergencyForm.formState.errors.doctor?.message}</FormMessage>
-                    </FormItem>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormItem>
-                      <FormLabel>Date</FormLabel>
-                      <FormControl>
-                        <DatePicker 
-                          date={emergencyForm.getValues("date")} 
-                          onDateChange={(date) => emergencyForm.setValue("date", date as Date, { shouldValidate: true })}
-                        />
-                      </FormControl>
-                      <FormMessage>{emergencyForm.formState.errors.date?.message}</FormMessage>
-                    </FormItem>
-                    
-                    <FormItem>
-                      <FormLabel>Time</FormLabel>
-                      <FormControl>
-                        <select
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          {...emergencyForm.register("time")}
-                        >
-                          <option value="">Select a time slot</option>
-                          <option value="9:00 AM">9:00 AM</option>
-                          <option value="10:00 AM">10:00 AM</option>
-                          <option value="11:00 AM">11:00 AM</option>
-                          <option value="1:00 PM">1:00 PM</option>
-                          <option value="2:00 PM">2:00 PM</option>
-                          <option value="3:00 PM">3:00 PM</option>
-                        </select>
-                      </FormControl>
-                      <FormMessage>{emergencyForm.formState.errors.time?.message}</FormMessage>
-                    </FormItem>
-                  </div>
                   
                   <FormItem>
                     <FormLabel>Additional Notes</FormLabel>
